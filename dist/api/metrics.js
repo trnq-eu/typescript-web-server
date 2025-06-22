@@ -1,18 +1,5 @@
-import { config } from '../config.js';
-/**
- * Handles requests to the /metrics path, returning the current
- * number of file server hits as plain text.
- * The format will be "Hits: x", where x is the count.
- *
- * @param req The Express Request object.
- * @param res The Express Response object.
- */
-export function handlerMetrics(_, res) {
-    // set header to plain text
-    res.setHeader('Content-Type', 'text/plain');
-    // construct the response string
-    const responseText = `Hits: ${config.fileServerHits}`;
-    // send formatted text back to the client
-    res.send(responseText);
+import { config } from "../config.js";
+export async function handlerMetrics(_, res) {
+    res.send(`Hits: ${config.fileServerHits}`);
     res.end();
 }
