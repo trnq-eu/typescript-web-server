@@ -1,35 +1,30 @@
-import express, { Request, Response, NextFunction} from "express";
+import express from "express";
+
+import { handlerReadiness } from "./api/readiness.js";
+import { handlerMetrics } from "./api/metrics.js";
+import { handlerReset } from "./api/reset.js";
+import {
+  middlewareLogResponse,
+  middlewareMetricsInc,
+} from "./api/middleware.js";
 
 const app = express();
 const PORT = 8080;
 
-// Middleware to log non-OK responses
-const middlewareLogResponses = (req: Request, res: Response, next: NextFunction) => {
-    res.on("finish", () => {
-        const statusCode = res.statusCode;
-        if (statusCode < 200 || statusCode >= 300) {
-            console.log(`[NON-OK] ${req.method} ${req.url} - Status: ${statusCode}`);
-        }
-    });
-    next();
-};
 
 // Apply the middleware at the application level
-app.use(middlewareLogResponses);
-
-// Add readiness endpoint
-const handlerReadiness = (req: Request, res: Response) => {
-    // Set the Content-Type header
-    res.set('Content-Type', 'text/plain; charset=utf-8');
-    // Send the body text. Express automatically set status 200
-    res.send("OK");
-};
+app.use(middlewareLogResponse);
+app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
 // Register the handler for the /healthz path
 app.get("/healthz", handlerReadiness);
 
-// Update the Static Files Path
-app.use("/app", express.static("./src/app"));
+//Register handlerMetrics
+app.get("/metrics", handlerMetrics);
+
+//Register reset
+app.get("/reset", handlerReset);
+
 
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
