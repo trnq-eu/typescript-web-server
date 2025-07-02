@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { respondWithJSON, respondWithError } from "./json.js";
-
+import { BadRequestError, NotFoundError } from "./errors.js"
 
 const profaneWords = ["kerfuffle", "sharbert", "fornax"];
 
@@ -13,13 +13,12 @@ export async function handlerChirpsValidate(req: Request, res: Response) {
   const maxChirpLength = 140;
 
   if (!params || !params.body || typeof params.body !== 'string') {
-    respondWithError(res, 400, "Invalid request body: body property missing or incorrect type");
+    throw new BadRequestError("Invalid request body: body property missing or incorrect type");
     return;
   }
 
   if (params.body.length > maxChirpLength) {
-    throw new Error("Chirp is too long");
-    return;
+    throw new BadRequestError("Chirp is too long. Max length is 140");
   }
 
   let cleanedBody = params.body;

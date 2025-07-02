@@ -1,25 +1,25 @@
 import type { Request, Response, NextFunction } from "express";
 
 
-class BadRequestError extends Error {
+export class BadRequestError extends Error {
     constructor(message: string) {
         super(message);
     }
 }
 
-class UnauthorizedError extends Error {
+export class UnauthorizedError extends Error {
     constructor(message: string) {
         super(message);
     }
 }
 
-class ForbiddenError extends Error {
+export class ForbiddenError extends Error {
     constructor(message: string) {
         super(message);
     }
 }
 
-class NotFoundError extends Error {
+export class NotFoundError extends Error {
     constructor(message: string) {
         super(message);
     }
@@ -32,12 +32,14 @@ export async function handlerError(
     next: NextFunction,
 ) {
     if (err instanceof NotFoundError) {
-        res.status(404).send(err);
+        res.status(404).json({ error: err.message});
     } else if (err instanceof ForbiddenError) {
-        res.status(403).send(err);
+        res.status(403).json({ error: err.message});
     } else if (err instanceof UnauthorizedError) {
-        res.status(401).send(err);
+        res.status(401).json({ error: err.message});
+    } else if (err instanceof BadRequestError) {
+        res.status(400).json({ error: err.message});
     } else {
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({ error: "Internal Server Error" });
     }
     }
