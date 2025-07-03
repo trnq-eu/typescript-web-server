@@ -1,8 +1,7 @@
 import type { Request, Response } from "express";
-import { respondWithJSON, respondWithError } from "./json.js";
-import { BadRequestError, NotFoundError } from "./errors.js"
 
-const profaneWords = ["kerfuffle", "sharbert", "fornax"];
+import { respondWithJSON } from "./json.js";
+import { BadRequestError } from "./errors.js";
 
 export async function handlerChirpsValidate(req: Request, res: Response) {
   type parameters = {
@@ -10,28 +9,28 @@ export async function handlerChirpsValidate(req: Request, res: Response) {
   };
 
   const params: parameters = req.body;
+
   const maxChirpLength = 140;
-
-  if (!params || !params.body || typeof params.body !== 'string') {
-    throw new BadRequestError("Invalid request body: body property missing or incorrect type");
-    return;
-  }
-
   if (params.body.length > maxChirpLength) {
-    throw new BadRequestError("Chirp is too long. Max length is 140");
+    throw new BadRequestError(
+      `Chirp is too long. Max length is ${maxChirpLength}`,
+    );
   }
 
-  let cleanedBody = params.body;
   const words = params.body.split(" ");
 
+  const badWords = ["kerfuffle", "sharbert", "fornax"];
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
-    const lowerCaseWord = word.toLowerCase();
-
-    if (profaneWords.includes(lowerCaseWord)) {
-      cleanedBody = cleanedBody.replace(word, "****");
+    const loweredWord = word.toLowerCase();
+    if (badWords.includes(loweredWord)) {
+      words[i] = "****";
     }
   }
 
-  respondWithJSON(res, 200, { cleanedBody: cleanedBody });
+  const cleaned = words.join(" ");
+
+  respondWithJSON(res, 200, {
+    cleanedBody: cleaned,
+  });
 }

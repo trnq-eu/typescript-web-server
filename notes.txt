@@ -1,0 +1,6 @@
+sudo service postgresql start
+
+psql postgres://postgres:postgres@localhost:5433/chirpy
+
+npx drizzle-kit generate
+npx drizzle-kit migrate
