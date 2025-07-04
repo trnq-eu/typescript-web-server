@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import { respondWithJSON } from "./json.js";
 import { BadRequestError } from "./errors.js";
 
-export async function handlerChirpsValidate(req: Request, res: Response) {
+export async function handlerChirp(req: Request, res: Response) {
   type parameters = {
     body: string;
   };
