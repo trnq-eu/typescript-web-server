@@ -3,6 +3,7 @@ import type { MigrationConfig } from "drizzle-orm/migrator";
 type Config = {
   api: APIConfig;
   db: DBConfig;
+  jwt: string;
 };
 
 type APIConfig = {
@@ -40,4 +41,6 @@ export const config: Config = {
     url: envOrThrow("DB_URL"),
     migrationConfig: migrationConfig,
   },
+  jwt: envOrThrow("JWT_SECRET")
+  
 };

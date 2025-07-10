@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
+import type { Request, Response } from "express";
+
 
 export async function hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
@@ -39,3 +41,18 @@ export function validateJWT(tokenString: string, secret: string): string {
     throw new Error("Invalid token payload");
 }
 
+
+export function getBearerToken(req: Request): string {
+    const auth_header = req.get('Authorization')
+    if (!auth_header) {
+        throw new Error('Invalid authorization')
+    }
+    else if (!auth_header.startsWith("Bearer ")) {
+        throw new Error('Invalid authorization')
+    }
+    const token = auth_header.split(" ")[1]
+    if (!token || token === 'undefined' || token === "" || token === " ") {
+        throw new Error('Invalid authorization')
+    }
+    return token
+};

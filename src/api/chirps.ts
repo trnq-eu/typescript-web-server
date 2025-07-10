@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 import { createChirp, getAllChirps, selectChirpById } from "../db/queries/chirps.js"
 import { respondWithJSON } from "./json.js";
 import { BadRequestError } from "./errors.js";
+import { validateJWT, getBearerToken } from "../auth.js"
 import {v4 as uuidv4} from 'uuid';
+import { config } from "../config.js"
+
 
 export async function handlerSingleChirp(req: Request, res: Response) {
   type parameters = {
@@ -50,9 +53,16 @@ export async function handlerChirp(req: Request, res: Response) {
     userId: string
   };
 
+  const jwtToken = getBearerToken(req);
+  const validatedJwtToken = validateJWT(jwtToken, config.jwt)
+
+  if (!validatedJwtToken) {
+    throw new Error("invalid token")
+  }
+
   const params: parameters = {
     body: req.body.body,
-    userId: req.body.userId,
+    userId: validatedJwtToken
   };
 
   const maxChirpLength = 140;
