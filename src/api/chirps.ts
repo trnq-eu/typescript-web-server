@@ -1,81 +1,42 @@
 import type { Request, Response } from "express";
-import { createChirp, getAllChirps, selectChirpById } from "../db/queries/chirps.js"
+
 import { respondWithJSON } from "./json.js";
-import { BadRequestError } from "./errors.js";
-import { validateJWT, getBearerToken } from "../auth.js"
-import {v4 as uuidv4} from 'uuid';
-import { config } from "../config.js"
+import { createChirp, getChirp, getChirps } from "../db/queries/chirps.js";
+import { BadRequestError, NotFoundError } from "./errors.js";
+import { getBearerToken, validateJWT } from "../auth.js";
+import { config } from "../config.js";
 
-
-export async function handlerSingleChirp(req: Request, res: Response) {
+export async function handlerChirpsCreate(req: Request, res: Response) {
   type parameters = {
-    chirpID: string
+    body: string;
   };
 
-  const params: parameters = {
-    chirpID: req.params.chirpID,
-  };
+  const params: parameters = req.body;
 
-  const chirp = await selectChirpById(params.chirpID)
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.jwt.secret);
 
-  if (!chirp) {
-    respondWithJSON(res, 404, {})
-  }
-  else {
-    respondWithJSON(res, 200, {
-  id: chirp[0].id,
-  createdAt: chirp[0].createdAt,
-  updatedAt: chirp[0].updatedAt,
-  body: chirp[0].body,
-  userId: chirp[0].user_id,
-}); 
-  }
+  const cleaned = validateChirp(params.body);
+  const chirp = await createChirp({ body: cleaned, userId: userId });
+
+  respondWithJSON(res, 201, chirp);
 }
 
-export async function handlerAllChirps(req: Request, res: Response) {
-  const allChirps = await getAllChirps()
-  const transformedChirps = allChirps.map((chirp: any) => {
-    return {
-      id: chirp.id,
-      createdAt: chirp.createdAt,
-      updatedAt: chirp.updatedAt,
-      body: chirp.body,
-      userId: chirp.user_id,
-    }
-  })
-  respondWithJSON(res, 200, transformedChirps); 
-
-}
-
-export async function handlerChirp(req: Request, res: Response) {
-  type parameters = {
-    body: string,
-    userId: string
-  };
-
-  const jwtToken = getBearerToken(req);
-  const validatedJwtToken = validateJWT(jwtToken, config.jwt)
-
-
-  if (!validatedJwtToken) {
-    throw new Error("invalid token")
-  }
-
-  const params: parameters = {
-    body: req.body.body,
-    userId: validatedJwtToken
-  };
-
+function validateChirp(body: string) {
   const maxChirpLength = 140;
-  if (params.body.length > maxChirpLength) {
+  if (body.length > maxChirpLength) {
     throw new BadRequestError(
       `Chirp is too long. Max length is ${maxChirpLength}`,
     );
   }
 
-  const words = params.body.split(" ");
-
   const badWords = ["kerfuffle", "sharbert", "fornax"];
+  return getCleanedBody(body, badWords);
+}
+
+function getCleanedBody(body: string, badWords: string[]) {
+  const words = body.split(" ");
+
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
     const loweredWord = word.toLowerCase();
@@ -85,21 +46,21 @@ export async function handlerChirp(req: Request, res: Response) {
   }
 
   const cleaned = words.join(" ");
-  let myuuid = uuidv4();
+  return cleaned;
+}
 
-  const chirp = await createChirp({ 
-  id: myuuid,
-  body: cleaned,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  user_id: params.userId
-});
+export async function handlerChirpsRetrieve(_: Request, res: Response) {
+  const chirps = await getChirps();
+  respondWithJSON(res, 200, chirps);
+}
 
-  respondWithJSON(res, 201, {
-  id: chirp.id,
-  createdAt: chirp.createdAt,
-  updatedAt: chirp.updatedAt,
-  body: chirp.body,
-  userId: chirp.user_id,
-});
+export async function handlerChirpsGet(req: Request, res: Response) {
+  const { chirpId } = req.params;
+
+  const chirp = await getChirp(chirpId);
+  if (!chirp) {
+    throw new NotFoundError(`Chirp with chirpId: ${chirpId} not found`);
+  }
+
+  respondWithJSON(res, 200, chirp);
 }

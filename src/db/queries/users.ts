@@ -1,6 +1,6 @@
-import { db } from "../index.js";
-import { NewUser, users, refresh_token, NewRefreshToken } from "../schema.js";
 import { eq } from "drizzle-orm";
+import { db } from "../index.js";
+import { NewUser, users } from "../schema.js";
 
 export async function createUser(user: NewUser) {
   const [result] = await db
@@ -15,19 +15,7 @@ export async function reset() {
   await db.delete(users);
 }
 
-export async function lookupUser(email: string) {
-  const [result] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-  return result
-}
-
-export async function createRefreshToken(token: NewRefreshToken) {
-  const [result] = await db
-    .insert(refresh_token)
-    .values(token)
-    .onConflictDoNothing()
-    .returning();
+export async function getUserByEmail(email: string) {
+  const [result] = await db.select().from(users).where(eq(users.email, email));
   return result;
 }
