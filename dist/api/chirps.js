@@ -1,7 +1,9 @@
 import { createChirp, getAllChirps, selectChirpById } from "../db/queries/chirps.js";
 import { respondWithJSON } from "./json.js";
 import { BadRequestError } from "./errors.js";
+import { validateJWT, getBearerToken } from "../auth.js";
 import { v4 as uuidv4 } from 'uuid';
+import { config } from "../config.js";
 export async function handlerSingleChirp(req, res) {
     const params = {
         chirpID: req.params.chirpID,
@@ -34,9 +36,14 @@ export async function handlerAllChirps(req, res) {
     respondWithJSON(res, 200, transformedChirps);
 }
 export async function handlerChirp(req, res) {
+    const jwtToken = getBearerToken(req);
+    const validatedJwtToken = validateJWT(jwtToken, config.jwt);
+    if (!validatedJwtToken) {
+        throw new Error("invalid token");
+    }
     const params = {
         body: req.body.body,
-        userId: req.body.userId,
+        userId: validatedJwtToken
     };
     const maxChirpLength = 140;
     if (params.body.length > maxChirpLength) {

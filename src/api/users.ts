@@ -22,7 +22,6 @@ export async function handlerUsersCreate(req: Request, res: Response) {
   }
 
   const hashedPassword = await hashPassword(params.password)
-
  
   const user = await createUser({ 
     email: params.email, 
@@ -78,6 +77,7 @@ export async function handlerUsersLogin(req: Request, res: Response) {
   } 
 
   const token = makeJWT(user.id, params.expiresInSeconds, config.jwt)
+  
 
   respondWithJSON(res, 200, {
   id: user.id,

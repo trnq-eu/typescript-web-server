@@ -56,6 +56,7 @@ export async function handlerChirp(req: Request, res: Response) {
   const jwtToken = getBearerToken(req);
   const validatedJwtToken = validateJWT(jwtToken, config.jwt)
 
+
   if (!validatedJwtToken) {
     throw new Error("invalid token")
   }

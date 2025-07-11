@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 import type { Request, Response } from "express";
+import crypto from "crypto";
 
 
 export async function hashPassword(password: string): Promise<string> {
@@ -56,3 +57,7 @@ export function getBearerToken(req: Request): string {
     }
     return token
 };
+
+export function makeRefreshToken(): string {
+    return crypto.randomBytes(32).toString('hex')
+}
