@@ -8,7 +8,7 @@ import { handlerReset } from "./api/reset.js";
 import { errorMiddleWare, middlewareLogResponse, middlewareMetricsInc, } from "./api/middleware.js";
 import { handlerChirpsCreate, handlerChirpsGet, handlerChirpsRetrieve, } from "./api/chirps.js";
 import { config } from "./config.js";
-import { handlerUsersCreate } from "./api/users.js";
+import { handlerUsersCreate, handlerUsersUpdate } from "./api/users.js";
 import { handlerLogin, handlerRefresh, handlerRevoke } from "./api/auth.js";
 const migrationClient = postgres(config.db.url, { max: 1 });
 await migrate(drizzle(migrationClient), config.db.migrationConfig);
@@ -45,6 +45,9 @@ app.get("/api/chirps", (req, res, next) => {
 });
 app.get("/api/chirps/:chirpId", (req, res, next) => {
     Promise.resolve(handlerChirpsGet(req, res)).catch(next);
+});
+app.put("/api/users", (req, res, next) => {
+    Promise.resolve(handlerUsersUpdate(req, res)).catch(next);
 });
 app.use(errorMiddleWare);
 app.listen(config.api.port, () => {
