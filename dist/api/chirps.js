@@ -1,5 +1,5 @@
 import { respondWithJSON } from "./json.js";
-import { createChirp, getChirp, getChirps } from "../db/queries/chirps.js";
+import { createChirp, getChirp, getChirps, deleteChirp } from "../db/queries/chirps.js";
 import { BadRequestError, NotFoundError } from "./errors.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
@@ -42,4 +42,19 @@ export async function handlerChirpsGet(req, res) {
         throw new NotFoundError(`Chirp with chirpId: ${chirpId} not found`);
     }
     respondWithJSON(res, 200, chirp);
+}
+export async function handlerChirpsDelete(req, res) {
+    const { chirpId } = req.params;
+    const retrievedChirp = await getChirp(chirpId);
+    if (!retrievedChirp) {
+        throw new NotFoundError(`Chirp with chirpId: ${chirpId} not found`);
+    }
+    const token = getBearerToken(req);
+    const userId = validateJWT(token, config.jwt.secret);
+    if (userId != retrievedChirp.userId) {
+        respondWithJSON(res, 403, `User not authenticated`);
+        return;
+    }
+    await deleteChirp(chirpId);
+    respondWithJSON(res, 204, "");
 }

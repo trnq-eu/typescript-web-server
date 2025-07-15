@@ -15,6 +15,7 @@ import {
   handlerChirpsCreate,
   handlerChirpsGet,
   handlerChirpsRetrieve,
+  handlerChirpsDelete
 } from "./api/chirps.js";
 import { config } from "./config.js";
 import { handlerUsersCreate, handlerUsersUpdate } from "./api/users.js";
@@ -62,6 +63,9 @@ app.get("/api/chirps", (req, res, next) => {
 });
 app.get("/api/chirps/:chirpId", (req, res, next) => {
   Promise.resolve(handlerChirpsGet(req, res)).catch(next);
+});
+app.delete("/api/chirps/:chirpId", (req, res, next) => {
+  Promise.resolve(handlerChirpsDelete(req, res)).catch(next);
 });
 app.put("/api/users", (req, res, next) => {
   Promise.resolve(handlerUsersUpdate(req, res)).catch(next);
