@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-import { createUser, updateUser } from "../db/queries/users.js";
+import { createUser, updateUser, upgradeUser } from "../db/queries/users.js";
 import { BadRequestError, UserNotAuthenticatedError } from "./errors.js";
 import { respondWithJSON } from "./json.js";
 import { NewUser } from "src/db/schema.js";
@@ -37,7 +37,32 @@ export async function handlerUsersCreate(req: Request, res: Response) {
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    isChirpyRed: user.isChirpyRed
   } satisfies UserResponse);
+}
+
+export async function handlerUserUpgrade(req: Request, res: Response) {
+  type parameters = {
+    event: string,
+    data: {
+      userId: string
+    }
+  };
+
+  const params: parameters = req.body;
+
+  if (params.event != "user.upgraded") {
+    respondWithJSON(res, 204,{})
+    return
+  }
+
+  const upgrade = await upgradeUser(params.data.userId);
+
+  if (upgrade) {
+    respondWithJSON(res, 204,{})
+  } else {
+    respondWithJSON(res, 404,{})
+  }
 }
 
 export async function handlerUsersUpdate(req: Request, res: Response) {
@@ -70,6 +95,7 @@ export async function handlerUsersUpdate(req: Request, res: Response) {
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    isChirpyRed: user.isChirpyRed
   } satisfies UserResponse);
 }
 
