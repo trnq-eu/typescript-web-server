@@ -1,5 +1,5 @@
 import { respondWithJSON } from "./json.js";
-import { createChirp, getChirp, getChirps, deleteChirp } from "../db/queries/chirps.js";
+import { createChirp, getChirp, getChirps, deleteChirp, getChirpsByAuthorId } from "../db/queries/chirps.js";
 import { BadRequestError, NotFoundError } from "./errors.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
@@ -31,8 +31,26 @@ function getCleanedBody(body, badWords) {
     const cleaned = words.join(" ");
     return cleaned;
 }
-export async function handlerChirpsRetrieve(_, res) {
-    const chirps = await getChirps();
+export async function handlerChirpsRetrieve(req, res) {
+    let chirps = [];
+    let authorId = "";
+    let authorIdQuery = req.query.authorId;
+    let sortOrder = req.query.sort;
+    if (typeof authorIdQuery === "string") {
+        authorId = authorIdQuery;
+    }
+    if (authorId) {
+        chirps = await getChirpsByAuthorId(authorId);
+    }
+    else {
+        chirps = await getChirps();
+    }
+    if (sortOrder === "asc" || !sortOrder) {
+        chirps.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    }
+    else {
+        chirps = chirps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
     respondWithJSON(res, 200, chirps);
 }
 export async function handlerChirpsGet(req, res) {

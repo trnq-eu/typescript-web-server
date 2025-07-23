@@ -25,4 +25,7 @@ export const config = {
         secret: envOrThrow("JWT_SECRET"),
         issuer: "chirpy",
     },
+    polka: {
+        apiKey: envOrThrow("POLKA_KEY")
+    }
 };

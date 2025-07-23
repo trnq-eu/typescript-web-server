@@ -22,6 +22,12 @@ app.get("/api/healthz", (req, res, next) => {
 app.get("/admin/metrics", (req, res, next) => {
     Promise.resolve(handlerMetrics(req, res)).catch(next);
 });
+app.get("/api/chirps", (req, res, next) => {
+    Promise.resolve(handlerChirpsRetrieve(req, res)).catch(next);
+});
+app.get("/api/chirps/:chirpId", (req, res, next) => {
+    Promise.resolve(handlerChirpsGet(req, res)).catch(next);
+});
 app.post("/admin/reset", (req, res, next) => {
     Promise.resolve(handlerReset(req, res)).catch(next);
 });
@@ -42,12 +48,6 @@ app.post("/api/chirps", (req, res, next) => {
 });
 app.post("/api/polka/webhooks", (req, res, next) => {
     Promise.resolve(handlerUserUpgrade(req, res)).catch(next);
-});
-app.get("/api/chirps", (req, res, next) => {
-    Promise.resolve(handlerChirpsRetrieve(req, res)).catch(next);
-});
-app.get("/api/chirps/:chirpId", (req, res, next) => {
-    Promise.resolve(handlerChirpsGet(req, res)).catch(next);
 });
 app.delete("/api/chirps/:chirpId", (req, res, next) => {
     Promise.resolve(handlerChirpsDelete(req, res)).catch(next);

@@ -95,3 +95,4 @@ export async function handlerRevoke(req: Request, res: Response) {
   await revokeRefreshToken(refreshToken);
   res.status(204).send();
 }
+

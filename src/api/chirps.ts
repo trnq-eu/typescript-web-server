@@ -1,10 +1,18 @@
 import type { Request, Response } from "express";
 
 import { respondWithJSON } from "./json.js";
-import { createChirp, getChirp, getChirps, deleteChirp } from "../db/queries/chirps.js";
+import { createChirp, getChirp, getChirps, deleteChirp, getChirpsByAuthorId } from "../db/queries/chirps.js";
 import { BadRequestError, NotFoundError } from "./errors.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
+
+interface Chirp {
+  id: string;
+  createdAt: Date; 
+  updatedAt: Date;   
+  body: string;
+  userId: string;
+}
 
 export async function handlerChirpsCreate(req: Request, res: Response) {
   type parameters = {
@@ -49,8 +57,26 @@ function getCleanedBody(body: string, badWords: string[]) {
   return cleaned;
 }
 
-export async function handlerChirpsRetrieve(_: Request, res: Response) {
-  const chirps = await getChirps();
+export async function handlerChirpsRetrieve(req: Request, res: Response) {
+  let chirps: Chirp[] = [];
+  let authorId = "";
+  let authorIdQuery = req.query.authorId;
+  let sortOrder = req.query.sort
+  if (typeof authorIdQuery === "string") {
+    authorId = authorIdQuery;
+  }
+  if (authorId) {
+    chirps = await getChirpsByAuthorId(authorId)
+  } else {
+    chirps = await getChirps()
+  }
+
+  
+  if (sortOrder === "asc" || !sortOrder ) {
+      chirps.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    } else {
+      chirps = chirps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    }
   respondWithJSON(res, 200, chirps);
 }
 

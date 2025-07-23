@@ -4,6 +4,7 @@ type Config = {
   api: APIConfig;
   db: DBConfig;
   jwt: JWTConfig;
+  polka: polkaConfig;
 };
 
 type APIConfig = {
@@ -22,6 +23,10 @@ type JWTConfig = {
   refreshDuration: number;
   secret: string;
   issuer: string;
+};
+
+type polkaConfig = {
+  apiKey: string;
 };
 
 process.loadEnvFile();
@@ -54,4 +59,7 @@ export const config: Config = {
     secret: envOrThrow("JWT_SECRET"),
     issuer: "chirpy",
   },
+  polka: {
+    apiKey: envOrThrow("POLKA_KEY")
+  }
 };

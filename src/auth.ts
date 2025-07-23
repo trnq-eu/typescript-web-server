@@ -75,3 +75,12 @@ export function extractBearerToken(header: string) {
 export function makeRefreshToken() {
   return crypto.randomBytes(32).toString("hex");
 }
+
+export async function getAPIKey(req: Request) {
+  const authHeader = req.headers["authorization"];
+  const prefix = "ApiKey ";
+  if (authHeader && authHeader.startsWith(prefix)) {
+    return authHeader.slice(prefix.length).trim();
+  }
+  return undefined;
+}

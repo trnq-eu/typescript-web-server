@@ -4,7 +4,7 @@ import { createUser, updateUser, upgradeUser } from "../db/queries/users.js";
 import { BadRequestError, UserNotAuthenticatedError } from "./errors.js";
 import { respondWithJSON } from "./json.js";
 import { NewUser } from "src/db/schema.js";
-import { getBearerToken, hashPassword, validateJWT } from "../auth.js";
+import { getBearerToken, hashPassword, validateJWT, getAPIKey } from "../auth.js";
 import { config } from "../config.js"
 
 
@@ -48,6 +48,14 @@ export async function handlerUserUpgrade(req: Request, res: Response) {
       userId: string
     }
   };
+
+  const polkaApiKey = await getAPIKey(req)
+  const polkaApiEnv = config.polka.apiKey
+
+  if (polkaApiKey != polkaApiEnv) {
+    respondWithJSON(res, 401,{})
+    return;
+  }
 
   const params: parameters = req.body;
 
